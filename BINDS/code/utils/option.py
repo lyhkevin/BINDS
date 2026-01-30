@@ -1,0 +1,120 @@
+import argparse
+
+class Options:
+    def __init__(self):
+        self.parser = argparse.ArgumentParser()
+        self.parser.add_argument('--train_cohort', default=['Public', 'Yunnan', 'Wenzhou'], help='cohorts used for training')
+        self.parser.add_argument('--internal_cohort', default=['Yunnan'], help='cohorts used for internal testing')
+        self.parser.add_argument('--external_cohort_1', default=['Hangzhou', 'Guizhou', 'Shanghai'], help='cohorts used for external testing 1')
+        self.parser.add_argument('--external_cohort_2', default=['Xinan', 'Fuyiyuan', 'Xiangya'], help='cohorts used for external testing 2')
+        self.parser.add_argument('--accumulation_steps', type=float, default=1)
+        self.parser.add_argument('--lr', type=float, default=1e-4)
+        self.parser.add_argument("--min_lr", default=1e-7)
+        self.parser.add_argument("--alignment", default=False, help='perform radiology-pathology alignment')
+        self.parser.add_argument("--epoch_alignment", default=20)
+        self.parser.add_argument("--warmup_epochs", default=1)
+        self.parser.add_argument("--batch_size", default=1, type=int)
+        self.parser.add_argument("--batch_size_alignment", default=60, type=int)
+        self.parser.add_argument("--epoch", default=50, type=int)
+        self.parser.add_argument("--num_workers", default=4, type=int)
+        self.parser.add_argument("--shuffle", default=True)
+        self.parser.add_argument("--num_heads", default=6)
+        self.parser.add_argument("--embed_dim", default=512)
+        self.parser.add_argument("--embed_dim_pathology", default=768)
+        self.parser.add_argument("--backbone_ultrasound", default='ResNet')
+        self.parser.add_argument("--backbone_mammogram", default='ResNet')
+        self.parser.add_argument("--backbone_mri", default='ResNet_3D')
+        self.parser.add_argument("--backbone_pathology", default='dinov2')
+        self.parser.add_argument("--ResNet_3D_path", default='../weight/pretrain/r3d18_K_200ep.pth')
+        self.parser.add_argument("--DINOv2_path", default='../weight/pretrain/pathology_dinov2/training_337499/teacher_checkpoint.pth')
+        self.parser.add_argument("--depth_encoder_pathology", default=12)
+        self.parser.add_argument("--depth_fusion_pathology", default=6)
+        self.parser.add_argument("--depth_encoder_ultrasound", default=12)
+        self.parser.add_argument("--depth_fusion_ultrasound", default=6)
+        self.parser.add_argument("--depth_encoder_mammogram", default=12)
+        self.parser.add_argument("--depth_fusion_mammogram", default=6)
+        self.parser.add_argument("--depth_encoder_mri", default=12)
+        self.parser.add_argument("--depth_fusion_mri", default=6)
+        self.parser.add_argument("--depth_fusion", default=10)
+
+        self.parser.add_argument("--multimodal", default=False)
+        self.parser.add_argument("--oversample_modality", default={'us+mm':1, 'us+mri':0, 'mm+mri':1, 'us+mm+mri':1})
+
+        self.parser.add_argument('--modalities', default=[], help='only those modalities are loaded')
+        self.parser.add_argument('--min_num_modalities', default=1, help='loaded sample must have at least N modalities')
+        self.parser.add_argument('--key_modalities', default=[], help='loaded sample must have these modalities')
+        self.parser.add_argument('--radiological', default=True, help='loaded sample must have at least one radiological modality')
+        self.parser.add_argument("--mri_view", default='Axial',help='Axial or Coronal or Sagittal')
+        self.parser.add_argument('--mri_modalities', default=['ADC', 'P0', 'P2', 'T2'])
+        self.parser.add_argument("--mri_size", default=(96, 96, 96))
+        self.parser.add_argument("--pathology_size", default=(224, 224))
+        self.parser.add_argument("--mammogram_size", default=(224, 224))
+        self.parser.add_argument("--ultrasound_size", default=(224, 224))
+        self.parser.add_argument('--pathology_scale', default=['small', 'medium', 'large'], help='scales of cropped pathological images')
+
+        self.parser.add_argument("--data_split_path", default='../dataset/data.json', help='a json file for data split')
+        self.parser.add_argument("--data_ratio", default=1, help='use N% of the training set for training')
+        self.parser.add_argument("--split_data", default=False, help='use for data split')
+
+        self.parser.add_argument("--wenzhou_root", default='../dataset/processed/Wenzhou/mixed/ultrasound/')
+        self.parser.add_argument("--wenzhou_benign_root", default='../dataset/processed/Wenzhou/benign/ultrasound/')
+        self.parser.add_argument("--wenzhou_clinical", default='../dataset/processed_clinical/Wenzhou.xlsx')
+
+        self.parser.add_argument("--yunnan_benign_clinical", default='../dataset/processed_clinical/Yunnan_benign.xlsx')
+        self.parser.add_argument("--yunnan_benign_root", default='../dataset/processed/Yunnan/benign/')
+
+        self.parser.add_argument("--yunnan_neoadjuvant_clinical", default='../dataset/processed_clinical/Yunnan_neoadjuvant.xlsx')
+        self.parser.add_argument("--yunnan_neoadjuvant_root", default='../dataset/processed/Yunnan/neoadjuvant/')
+
+        self.parser.add_argument("--yunnan_surgical_clinical", default='../dataset/processed_clinical/Yunnan_surgical.xlsx')
+        self.parser.add_argument("--yunnan_surgical_root", default='../dataset/processed/Yunnan/surgical/')
+
+        self.parser.add_argument("--xinan_surgical_clinical", default='../dataset/processed_clinical/Xinan_surgical.xlsx')
+        self.parser.add_argument("--xinan_surgical_root", default='../dataset/processed/Xinan/surgical/')
+
+        self.parser.add_argument("--xinan_neoadjuvant_clinical", default='../dataset/processed_clinical/Xinan_neoadjuvant.xlsx')
+        self.parser.add_argument("--xinan_neoadjuvant_root", default='../dataset/processed/Xinan/neoadjuvant/')
+
+        self.parser.add_argument("--xiangya_clinical", default='../dataset/processed_clinical/Xiangya.xlsx')
+        self.parser.add_argument("--xiangya_root", default='../dataset/processed/Xiangya/')
+
+        self.parser.add_argument("--guizhou_clinical", default='../dataset/processed_clinical/Guizhou.xlsx')
+        self.parser.add_argument("--guizhou_root", default='../dataset/processed/Guizhou/')
+
+        self.parser.add_argument("--shanghai_clinical", default='../dataset/processed_clinical/Shanghai.xlsx')
+        self.parser.add_argument("--shanghai_root", default='../dataset/processed/Shanghai/')
+
+        self.parser.add_argument("--fuyiyuan_clinical", default='../dataset/processed_clinical/Fuyiyuan.xlsx')
+        self.parser.add_argument("--fuyiyuan_root", default='../dataset/processed/Fuyiyuan/')
+
+        self.parser.add_argument("--hangzhou_clinical", default='../dataset/processed_clinical/Hangzhou.xlsx')
+        self.parser.add_argument("--hangzhou_root", default='../dataset/processed/Hangzhou/')
+
+        self.parser.add_argument("--public_root", default='../dataset/processed/Public/')
+
+        self.parser.add_argument('--img_save_path', type=str, default='../snapshot/train/load_data/')
+        self.parser.add_argument('--weight_save_path', type=str, default=None)
+        self.parser.add_argument('--weight_save_path_ultrasound', type=str, default='../weight/ultrasound/best_encoder_ultrasound.pth', help='load ultrasound weight when finetuning and testing')
+        self.parser.add_argument('--weight_save_path_mammogram', type=str, default='../weight/mammogram/best_encoder_mammogram.pth', help='load mammogram weight when finetuning')
+        self.parser.add_argument('--weight_save_path_mri', type=str, default='../weight/mri/best_encoder_mri.pth', help='load mri weight when finetuning')
+        self.parser.add_argument('--weight_save_path_pathology', type=str, default='../weight/pathology/best_encoder_pathology.pth', help='load pathology weight for alignment')
+        self.parser.add_argument('--weight_save_path_predictor', type=str, default='../weight/multi_modal/best_predictor.pth', help='load fusion network weight when testing')
+        self.parser.add_argument('--target', default=[], help='prediction targets')
+        self.parser.add_argument('--clinical', default=[], help='attributes loaded in clinical information')
+        self.parser.add_argument("--oversample", default=False, help='oversample targets during training')
+        self.parser.add_argument('--oversample_targets', default=[], help='subjects with these prediction targets are oversampled')
+        self.parser.add_argument('--oversample_rates', default=[], help='prediction targets')
+        self.parser.add_argument("--random_mask", default=False, help='perform random masking when finetuning')
+        self.parser.add_argument("--mask_ratio", default=0, help='Probability of masking data')
+        self.parser.add_argument("--augmentation", default=False, help='Perform data augmentation')
+        self.parser.add_argument("--augmentation_pathology", default=None, help='perform HED, HSV or default augmentation')
+        self.parser.add_argument("--loss_weight", default=None, help='weighted cross entropy loss')
+        self.parser.add_argument("--save_snapshot", default=False)
+        self.parser.add_argument("--snapshot_interval", default=1000)
+        self.parser.add_argument("--log_interval", default=10)
+        self.parser.add_argument("--weight_save_interval", default=5, help='save weight every N epochs')
+        self.parser.add_argument("--acc_threshold", default=[0.95, 0.95], help='early stopping threshold')
+
+    def get_opt(self):
+        args = self.parser.parse_args()
+        return args

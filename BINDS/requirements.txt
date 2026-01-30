@@ -1,0 +1,16 @@
+numpy
+pandas
+openpyxl
+argparse
+torchvision
+Pillow
+einops
+opencv-python
+scikit-image
+imageio
+nibabel
+scikit-learn
+matplotlib
+seaborn
+tqdm
+SimpleITK
